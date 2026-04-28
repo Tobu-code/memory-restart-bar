@@ -70,3 +70,7 @@ swift test
 ```
 
 协作规范与提交规则见 `AGENTS.md`。
+
+## 开源协议
+
+本项目使用 MIT License 开源，详见 `LICENSE`。

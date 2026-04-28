@@ -70,3 +70,7 @@ swift test
 ```
 
 Project conventions and contributor rules are in `AGENTS.md`.
+
+## License
+
+This project is released under the MIT License. See `LICENSE` for details.
