@@ -6,6 +6,7 @@ final class StatusBarController: NSObject {
     private let menu = NSMenu()
     private let appStore = AppStore()
     private let appRegistry = AppRegistry()
+    private let restartService = RestartService()
     private var trackedApps: [TrackedApp] = []
     private var statusText = "Ready"
 
@@ -126,8 +127,23 @@ final class StatusBarController: NSObject {
               let app = trackedApps.first(where: { $0.bundleId == bundleId }) else {
             return
         }
-        statusText = "Restart pending: \(app.displayName)"
+        statusText = "Restarting: \(app.displayName)"
         rebuildMenu()
+        Task { [weak self] in
+            guard let self else { return }
+            let result = await restartService.restart(app: app)
+            await MainActor.run {
+                switch result {
+                case .success:
+                    self.statusText = "Restarted: \(app.displayName)"
+                case .failure(.terminateTimeout):
+                    self.statusText = "Quit timeout: \(app.displayName)"
+                case .failure(.launchFailed):
+                    self.statusText = "Launch failed: \(app.displayName)"
+                }
+                self.rebuildMenuAndPresent()
+            }
+        }
     }
 
     @objc
