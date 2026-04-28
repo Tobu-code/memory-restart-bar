@@ -9,6 +9,7 @@ final class StatusBarController: NSObject {
     private let restartService = RestartService()
     private var trackedApps: [TrackedApp] = []
     private var statusText = "Ready"
+    private var isRestarting = false
 
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -45,7 +46,7 @@ final class StatusBarController: NSObject {
 
         let restartAllItem = NSMenuItem(title: "Restart All", action: #selector(handleRestartAll), keyEquivalent: "")
         restartAllItem.target = self
-        restartAllItem.isEnabled = !trackedApps.isEmpty
+        restartAllItem.isEnabled = !trackedApps.isEmpty && !isRestarting
         menu.addItem(restartAllItem)
 
         menu.addItem(.separator())
@@ -64,6 +65,7 @@ final class StatusBarController: NSObject {
                 rowView.onRemove = { [weak self] in
                     self?.removeTrackedApp(bundleId: app.bundleId)
                 }
+                rowView.actionsEnabled = !isRestarting
                 appItem.view = rowView
                 menu.addItem(appItem)
             }
@@ -123,20 +125,35 @@ final class StatusBarController: NSObject {
 
     @objc
     private func handleRestartAll() {
-        statusText = "Restart All is not implemented yet"
+        guard !trackedApps.isEmpty, !isRestarting else { return }
+        isRestarting = true
+        statusText = "Restarting all: 0/\(trackedApps.count)"
         rebuildMenu()
+        let apps = trackedApps
+        Task { [weak self] in
+            guard let self else { return }
+            let summary = await restartService.restartAll(apps: apps)
+            await MainActor.run {
+                self.isRestarting = false
+                self.statusText = "Restart All done: \(summary.successCount)/\(summary.total)"
+                self.rebuildMenuAndPresent()
+            }
+        }
     }
 
     private func restartTrackedApp(bundleId: String) {
+        guard !isRestarting else { return }
         guard let app = trackedApps.first(where: { $0.bundleId == bundleId }) else {
             return
         }
+        isRestarting = true
         statusText = "Restarting: \(app.displayName)"
         rebuildMenu()
         Task { [weak self] in
             guard let self else { return }
             let result = await restartService.restart(app: app)
             await MainActor.run {
+                self.isRestarting = false
                 switch result {
                 case .success:
                     self.statusText = "Restarted: \(app.displayName)"
@@ -156,6 +173,7 @@ final class StatusBarController: NSObject {
     }
 
     private func removeTrackedApp(bundleId: String) {
+        guard !isRestarting else { return }
         guard let idx = trackedApps.firstIndex(where: { $0.bundleId == bundleId }) else {
             return
         }

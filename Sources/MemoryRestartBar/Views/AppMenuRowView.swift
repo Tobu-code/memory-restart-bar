@@ -11,6 +11,19 @@ final class AppMenuRowView: NSView {
 
     var onRestart: (() -> Void)?
     var onRemove: (() -> Void)?
+    var actionsEnabled: Bool = true {
+        didSet {
+            restartButton.isEnabled = actionsEnabled
+            removeButton.isEnabled = actionsEnabled
+            if !actionsEnabled {
+                titleField.textColor = NSColor.disabledControlTextColor
+                restartButton.contentTintColor = NSColor.disabledControlTextColor
+                removeButton.contentTintColor = NSColor.disabledControlTextColor
+            } else {
+                updateHoverStyle()
+            }
+        }
+    }
 
     init(appName: String) {
         super.init(frame: NSRect(x: 0, y: 0, width: 1, height: 28))
@@ -93,10 +106,14 @@ final class AppMenuRowView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
+        guard actionsEnabled else { return }
         onRestart?()
     }
 
     private func updateHoverStyle() {
+        if !actionsEnabled {
+            return
+        }
         if isHovered {
             layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(0.9).cgColor
             titleField.textColor = .white

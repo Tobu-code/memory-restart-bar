@@ -6,6 +6,12 @@ enum RestartError: Error {
     case launchFailed
 }
 
+struct RestartAllSummary {
+    let total: Int
+    let successCount: Int
+    let failureCount: Int
+}
+
 final class RestartService {
     func restart(app: TrackedApp, timeout: TimeInterval = 6) async -> Result<Void, RestartError> {
         if let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: app.bundleId).first {
@@ -23,6 +29,17 @@ final class RestartService {
             return .failure(.launchFailed)
         }
         return .success(())
+    }
+
+    func restartAll(apps: [TrackedApp], timeout: TimeInterval = 6) async -> RestartAllSummary {
+        var successCount = 0
+        for app in apps {
+            let result = await restart(app: app, timeout: timeout)
+            if case .success = result {
+                successCount += 1
+            }
+        }
+        return RestartAllSummary(total: apps.count, successCount: successCount, failureCount: apps.count - successCount)
     }
 
     private func launch(app: TrackedApp) async -> Bool {
