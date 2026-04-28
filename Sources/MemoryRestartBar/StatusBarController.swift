@@ -30,7 +30,7 @@ final class StatusBarController: NSObject {
     private func rebuildMenu() {
         menu.removeAllItems()
 
-        let titleItem = NSMenuItem(title: "MemoryRestartBar", action: nil, keyEquivalent: "")
+        let titleItem = NSMenuItem(title: "MemoryRestartBar \(AppVersion.current)", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
 

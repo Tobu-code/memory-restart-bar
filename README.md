@@ -2,6 +2,8 @@
 
 A lightweight native macOS menu bar app for quickly restarting frequently used applications.
 
+Current version: `v1.0.0`
+
 ## Features
 
 - Add any `.app` from your system
