@@ -22,4 +22,17 @@ final class AppStoreTests: XCTestCase {
 
         XCTAssertEqual(store.loadApps(), [app])
     }
+
+    func test_saveEmptyApps_clearsStoredApps() {
+        let suiteName = "AppStoreTests.Clear.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defaults.removePersistentDomain(forName: suiteName)
+        let store = AppStore(defaults: defaults)
+        let app = TrackedApp(displayName: "Ghostty", bundleId: "com.example.ghostty", appPath: "/Applications/Ghostty.app")
+
+        store.saveApps([app])
+        store.saveApps([])
+
+        XCTAssertEqual(store.loadApps(), [])
+    }
 }

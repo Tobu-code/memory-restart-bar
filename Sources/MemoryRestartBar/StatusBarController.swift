@@ -56,9 +56,15 @@ final class StatusBarController: NSObject {
             menu.addItem(emptyItem)
         } else {
             for app in trackedApps {
-                let appItem = NSMenuItem(title: app.displayName, action: #selector(handleTrackedAppClicked(_:)), keyEquivalent: "")
-                appItem.target = self
-                appItem.representedObject = app.bundleId
+                let appItem = NSMenuItem()
+                let rowView = AppMenuRowView(appName: app.displayName)
+                rowView.onRestart = { [weak self] in
+                    self?.restartTrackedApp(bundleId: app.bundleId)
+                }
+                rowView.onRemove = { [weak self] in
+                    self?.removeTrackedApp(bundleId: app.bundleId)
+                }
+                appItem.view = rowView
                 menu.addItem(appItem)
             }
         }
@@ -121,10 +127,8 @@ final class StatusBarController: NSObject {
         rebuildMenu()
     }
 
-    @objc
-    private func handleTrackedAppClicked(_ sender: NSMenuItem) {
-        guard let bundleId = sender.representedObject as? String,
-              let app = trackedApps.first(where: { $0.bundleId == bundleId }) else {
+    private func restartTrackedApp(bundleId: String) {
+        guard let app = trackedApps.first(where: { $0.bundleId == bundleId }) else {
             return
         }
         statusText = "Restarting: \(app.displayName)"
@@ -149,6 +153,16 @@ final class StatusBarController: NSObject {
     @objc
     private func handleQuit() {
         NSApp.terminate(nil)
+    }
+
+    private func removeTrackedApp(bundleId: String) {
+        guard let idx = trackedApps.firstIndex(where: { $0.bundleId == bundleId }) else {
+            return
+        }
+        let removed = trackedApps.remove(at: idx)
+        appStore.saveApps(trackedApps)
+        statusText = "Removed: \(removed.displayName)"
+        rebuildMenuAndPresent()
     }
 
     private func rebuildMenuAndPresent() {
