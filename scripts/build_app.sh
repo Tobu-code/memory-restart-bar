@@ -48,9 +48,9 @@ cat > "${PLIST_PATH}" <<EOF
   <key>CFBundleIdentifier</key>
   <string>local.memoryrestartbar.app</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>1.0.1</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0.0</string>
+  <string>1.0.1</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleExecutable</key>
