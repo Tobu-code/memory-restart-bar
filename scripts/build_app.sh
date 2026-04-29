@@ -7,6 +7,8 @@ DIST_DIR="${ROOT_DIR}/dist"
 APP_DIR="${DIST_DIR}/${APP_NAME}.app"
 BIN_PATH="${ROOT_DIR}/.build/release/${APP_NAME}"
 PLIST_PATH="${APP_DIR}/Contents/Info.plist"
+ICONSET_DIR="${ROOT_DIR}/Assets/AppIcon.iconset"
+ICNS_PATH="${ROOT_DIR}/Assets/AppIcon.icns"
 
 echo "[1/4] Building release binary..."
 swift build -c release --package-path "${ROOT_DIR}"
@@ -21,6 +23,18 @@ rm -rf "${APP_DIR}"
 mkdir -p "${APP_DIR}/Contents/MacOS" "${APP_DIR}/Contents/Resources"
 cp "${BIN_PATH}" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 chmod +x "${APP_DIR}/Contents/MacOS/${APP_NAME}"
+
+if [[ ! -f "${ICNS_PATH}" ]]; then
+  if [[ -d "${ICONSET_DIR}" ]]; then
+    iconutil -c icns "${ICONSET_DIR}" -o "${ICNS_PATH}"
+  else
+    echo "Warning: icon not found, app will use default icon."
+  fi
+fi
+
+if [[ -f "${ICNS_PATH}" ]]; then
+  cp "${ICNS_PATH}" "${APP_DIR}/Contents/Resources/AppIcon.icns"
+fi
 
 cat > "${PLIST_PATH}" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -41,6 +55,8 @@ cat > "${PLIST_PATH}" <<EOF
   <string>APPL</string>
   <key>CFBundleExecutable</key>
   <string>${APP_NAME}</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>LSUIElement</key>
   <true/>
 </dict>
