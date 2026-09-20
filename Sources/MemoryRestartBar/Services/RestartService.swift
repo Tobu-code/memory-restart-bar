@@ -12,7 +12,7 @@ struct RestartAllSummary {
     let failureCount: Int
 }
 
-final class RestartService {
+final class RestartService: @unchecked Sendable {
     func restart(app: TrackedApp, timeout: TimeInterval = 6) async -> Result<Void, RestartError> {
         if let runningApp = NSRunningApplication.runningApplications(withBundleIdentifier: app.bundleId).first {
             let terminateTriggered = runningApp.terminate()

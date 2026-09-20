@@ -1,10 +1,10 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.4
 import PackageDescription
 
 let package = Package(
     name: "MemoryRestartBar",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v27)
     ],
     products: [
         .executable(name: "MemoryRestartBar", targets: ["MemoryRestartBar"])

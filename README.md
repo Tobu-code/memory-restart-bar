@@ -15,7 +15,7 @@
 
 ## 环境要求
 
-- macOS 13+
+- macOS 27+
 - Xcode Command Line Tools / Swift 工具链
 
 ## 本地运行

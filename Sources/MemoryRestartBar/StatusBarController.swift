@@ -1,6 +1,7 @@
 import AppKit
 import UniformTypeIdentifiers
 
+@MainActor
 final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
     private let menu = NSMenu()
@@ -130,14 +131,12 @@ final class StatusBarController: NSObject {
         statusText = "Restarting all: 0/\(trackedApps.count)"
         rebuildMenu()
         let apps = trackedApps
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             let summary = await restartService.restartAll(apps: apps)
-            await MainActor.run {
-                self.isRestarting = false
-                self.statusText = "Restart All done: \(summary.successCount)/\(summary.total)"
-                self.rebuildMenuAndPresent()
-            }
+            self.isRestarting = false
+            self.statusText = "Restart All done: \(summary.successCount)/\(summary.total)"
+            self.rebuildMenuAndPresent()
         }
     }
 
@@ -149,21 +148,19 @@ final class StatusBarController: NSObject {
         isRestarting = true
         statusText = "Restarting: \(app.displayName)"
         rebuildMenu()
-        Task { [weak self] in
+        Task { @MainActor [weak self] in
             guard let self else { return }
             let result = await restartService.restart(app: app)
-            await MainActor.run {
-                self.isRestarting = false
-                switch result {
-                case .success:
-                    self.statusText = "Restarted: \(app.displayName)"
-                case .failure(.terminateTimeout):
-                    self.statusText = "Quit timeout: \(app.displayName)"
-                case .failure(.launchFailed):
-                    self.statusText = "Launch failed: \(app.displayName)"
-                }
-                self.rebuildMenuAndPresent()
+            self.isRestarting = false
+            switch result {
+            case .success:
+                self.statusText = "Restarted: \(app.displayName)"
+            case .failure(.terminateTimeout):
+                self.statusText = "Quit timeout: \(app.displayName)"
+            case .failure(.launchFailed):
+                self.statusText = "Launch failed: \(app.displayName)"
             }
+            self.rebuildMenuAndPresent()
         }
     }
 
