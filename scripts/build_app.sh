@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_NAME="MemoryRestartBar"
+MACOS_DEPLOYMENT_TARGET="27.0"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"
 APP_DIR="${DIST_DIR}/${APP_NAME}.app"
@@ -11,7 +12,7 @@ ICONSET_DIR="${ROOT_DIR}/Assets/AppIcon.iconset"
 ICNS_PATH="${ROOT_DIR}/Assets/AppIcon.icns"
 
 echo "[1/4] Building release binary..."
-swift build -c release --package-path "${ROOT_DIR}"
+MACOSX_DEPLOYMENT_TARGET="${MACOS_DEPLOYMENT_TARGET}" swift build -c release --package-path "${ROOT_DIR}"
 
 if [[ ! -x "${BIN_PATH}" ]]; then
   echo "Build output missing: ${BIN_PATH}" >&2
@@ -48,9 +49,11 @@ cat > "${PLIST_PATH}" <<EOF
   <key>CFBundleIdentifier</key>
   <string>local.memoryrestartbar.app</string>
   <key>CFBundleVersion</key>
-  <string>1.0.1</string>
+  <string>1.0.2</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.0.1</string>
+  <string>1.0.2</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>${MACOS_DEPLOYMENT_TARGET}</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleExecutable</key>
